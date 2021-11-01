@@ -1,4 +1,4 @@
-package pl.tyrontundrom.bookShop;
+package pl.tyrontundrom.bookShop.catalog.domain;
 
 public class Book {
     Long id;

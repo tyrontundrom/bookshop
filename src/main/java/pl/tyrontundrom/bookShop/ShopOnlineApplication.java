@@ -3,11 +3,13 @@ package pl.tyrontundrom.bookShop;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.catalog.domain.CatalogService;
 
 import java.util.List;
 
 @SpringBootApplication
-public class ShopOnlineApplication implements CommandLineRunner {
+public class ShopOnlineApplication {
 
 
 
@@ -15,16 +17,6 @@ public class ShopOnlineApplication implements CommandLineRunner {
 		SpringApplication.run(ShopOnlineApplication.class, args);
 	}
 
-	private final CatalogService catalogService;
 
-	public ShopOnlineApplication(CatalogService catalogService) {
-		this.catalogService = catalogService;
-	}
 
-	@Override
-	public void run(String... args) throws Exception {
-//		CatalogService service = new CatalogService();
-		List<Book> books = catalogService.findByTitle("Pan Tadeusz");
-		books.forEach(System.out::println);
-	}
 }
