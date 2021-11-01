@@ -1,5 +1,6 @@
 package pl.tyrontundrom.bookShop.catalog.domain;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 
@@ -9,18 +10,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CatalogService {
 
-    private CatalogRepository repository;
-
-    public CatalogService(CatalogRepository repository) {
-        this.repository = repository;
-    }
+    private final CatalogRepository repository;
 
     public List<Book> findByTitle(String title) {
         return repository.findAll()
                 .stream()
-                .filter(book -> book.title.startsWith(title))
+                .filter(book -> book.getTitle().startsWith(title))
                 .collect(Collectors.toList());
     }
 }
