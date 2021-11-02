@@ -13,13 +13,16 @@ public class ApplicationStartup implements CommandLineRunner {
 
     private final CatalogService catalogController;
     private final String title;
+    private final String author;
     private final Long limit;
 
     public ApplicationStartup(CatalogService catalogController,
                               @Value("${bookShop.catalog.query}") String title,
+                              @Value("${bookShop.catalog.author}")String author,
                               @Value("${bookShop.catalog.limit:2}") Long limit) {
         this.catalogController = catalogController;
         this.title = title;
+        this.author = author;
         this.limit = limit;
     }
 
@@ -27,5 +30,8 @@ public class ApplicationStartup implements CommandLineRunner {
     public void run(String... args) {
         List<Book> books = catalogController.findByTitle(title);
         books.stream().limit(limit).forEach(System.out::println);
+
+        List<Book> authors = catalogController.findByAuthor(author);
+        authors.stream().limit(limit).forEach(System.out::println);
     }
 }
