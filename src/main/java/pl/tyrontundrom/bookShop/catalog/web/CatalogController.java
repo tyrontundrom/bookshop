@@ -11,6 +11,10 @@ import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
 import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.CreateBookCommand;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 
+import javax.validation.Valid;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
@@ -50,9 +54,15 @@ class CatalogController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> addBook(@RequestBody RestCreateBookCommand comand) {
-        Book book = catalog.addBook(comand.toCommand());
+    public ResponseEntity<Void> addBook(@Valid @RequestBody RestCreateBookCommand command) {
+        Book book = catalog.addBook(command.toCommand());
         return ResponseEntity.created(createdBookUri(book)).build();
+    }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable Long id) {
+        catalog.removeById(id);
     }
 
     private URI createdBookUri(Book book) {
@@ -61,9 +71,17 @@ class CatalogController {
 
     @Data
     private static class RestCreateBookCommand {
+
+        @NotBlank
         private String title;
+
+        @NotBlank
         private String author;
+
+        @NotNull
         private Integer year;
+
+        @DecimalMin("0.00")
         private BigDecimal price;
 
         CreateBookCommand toCommand() {
