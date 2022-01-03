@@ -1,7 +1,9 @@
 package pl.tyrontundrom.bookShop.catalog.application.port;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import org.apache.commons.lang.StringUtils;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 
 import java.math.BigDecimal;
@@ -31,6 +33,17 @@ public interface CatalogUseCase {
 
     void removeById(Long id);
 
+    void updateBookCover(UpdateBookCoverCommand command);
+    void removeBookCover(Long id);
+
+
+    @Value
+    class UpdateBookCoverCommand {
+        Long id;
+        byte[] file;
+        String contentType;
+        String filename;
+    }
 
     @Value
     class CreateBookCommand {
@@ -46,21 +59,26 @@ public interface CatalogUseCase {
 
     @Value
     @Builder
+    @AllArgsConstructor
     class UpdateBookCommand {
         Long id;
         String title;
         String author;
         Integer year;
+        BigDecimal price;
 
         public Book updateFields(Book book) {
-            if (title != null) {
+            if (StringUtils.isNotBlank(title)) {
                 book.setTitle(title);
             }
-            if (author != null) {
+            if (StringUtils.isNotBlank(author)) {
                 book.setAuthor(author);
             }
             if (year != null) {
                 book.setYear(year);
+            }
+            if (price != null) {
+                book.setPrice(price);
             }
             return book;
         }

@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.catalog.domain.CatalogRepository;
+import pl.tyrontundrom.bookShop.uploads.application.ports.UploadUseCase;
+import pl.tyrontundrom.bookShop.uploads.application.ports.UploadUseCase.SaveUploadCommand;
+import pl.tyrontundrom.bookShop.uploads.domain.Upload;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 class CatalogService implements CatalogUseCase {
 
     private final CatalogRepository repository;
+    private final UploadUseCase upload;
 
 
     @Override
@@ -49,7 +53,7 @@ class CatalogService implements CatalogUseCase {
 
     @Override
     public List<Book> findByTitleAndAuthor(String title, String author) {
-      return repository.findAll()
+        return repository.findAll()
                 .stream()
                 .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
                 .filter(book -> book.getAuthor().toLowerCase().contains(author.toLowerCase()))
@@ -91,6 +95,30 @@ class CatalogService implements CatalogUseCase {
     @Override
     public void removeById(Long id) {
         repository.removeById(id);
+    }
+
+    @Override
+    public void updateBookCover(UpdateBookCoverCommand command) {
+        int length = command.getFile().length;
+        System.out.println("Received cover command: " + command.getFilename() + " bytes: " + length);
+        repository.findById(command.getId())
+                .ifPresent(book -> {
+                    Upload saveUpload = upload.save(new SaveUploadCommand(command.getFilename(), command.getFile(), command.getContentType()));
+                    book.setCoverId(saveUpload.getId());
+                    repository.save(book);
+                });
+    }
+
+    @Override
+    public void removeBookCover(Long id) {
+        repository.findById(id)
+                .ifPresent(book -> {
+                    if (book.getCoverId() != null) {
+                        upload.removeById(book.getCoverId());
+                        book.setCoverId(null);
+                        repository.save(book);
+                    }
+                });
     }
 
 
