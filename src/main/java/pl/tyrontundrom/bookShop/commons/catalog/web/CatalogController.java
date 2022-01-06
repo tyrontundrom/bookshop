@@ -1,18 +1,18 @@
-package pl.tyrontundrom.bookShop.catalog.web;
+package pl.tyrontundrom.bookShop.commons.catalog.web;
 
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
-import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.CreateBookCommand;
-import pl.tyrontundrom.bookShop.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase;
+import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.web.CreatedURI;
 
 import javax.validation.Valid;
 import javax.validation.constraints.DecimalMin;
@@ -23,8 +23,6 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-
-import static pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.*;
 
 @RequestMapping("/catalog")
 @RestController
@@ -60,7 +58,7 @@ class CatalogController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> addBook(@Valid @RequestBody CatalogController.RestBookCommand command) {
+    public ResponseEntity<Void> addBook(@Valid @RequestBody RestBookCommand command) {
         Book book = catalog.addBook(command.toCreateCommand());
         return ResponseEntity.created(createdBookUri(book)).build();
     }
@@ -68,18 +66,18 @@ class CatalogController {
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateBook(@PathVariable Long id, @Validated(UpdateValidation.class) @RequestBody RestBookCommand command) {
-       UpdateBookResponse response = catalog.updateBook(command.toUpdateCommand(id));
+       CatalogUseCase.UpdateBookResponse response = catalog.updateBook(command.toUpdateCommand(id));
        if (!response.isSuccess()) {
            String message = String.join(",", response.getErrors());
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
        }
     }
 
-    @PutMapping("{id}/cover")
+    @PutMapping(value = "{id}/cover", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void addBookCover(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
         System.out.println("Got file: " + file.getOriginalFilename());
-        catalog.updateBookCover(new UpdateBookCoverCommand(
+        catalog.updateBookCover(new CatalogUseCase.UpdateBookCoverCommand(
                 id,
                 file.getBytes(),
                 file.getContentType(),
@@ -101,7 +99,7 @@ class CatalogController {
     }
 
     private URI createdBookUri(Book book) {
-        return ServletUriComponentsBuilder.fromCurrentRequestUri().path("/" + book.getId().toString()).build().toUri();
+        return new CreatedURI("/" + book.getId().toString()).uri();
     }
 
     interface UpdateValidation {
@@ -123,16 +121,16 @@ class CatalogController {
         @NotNull(message = "provide a year", groups = {CreateValidation.class})
         private Integer year;
 
-        @NotNull(message = "privide a price", groups = {CreateValidation.class})
+        @NotNull(message = "provide a price", groups = {CreateValidation.class})
         @DecimalMin(value = "0.00", message = "provide a price", groups = {CreateValidation.class, UpdateValidation.class})
         private BigDecimal price;
 
-        CreateBookCommand toCreateCommand() {
-            return new CreateBookCommand(title, author, year, price);
+        CatalogUseCase.CreateBookCommand toCreateCommand() {
+            return new CatalogUseCase.CreateBookCommand(title, author, year, price);
         }
 
-        UpdateBookCommand toUpdateCommand(Long id) {
-            return new UpdateBookCommand(id, title, author, year, price);
+        CatalogUseCase.UpdateBookCommand toUpdateCommand(Long id) {
+            return new CatalogUseCase.UpdateBookCommand(id, title, author, year, price);
         }
     }
 }

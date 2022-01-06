@@ -1,12 +1,12 @@
 package pl.tyrontundrom.bookShop.order.domain;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Value;
+import lombok.*;
 
 @Data
 @Builder
-public class Recepient {
+@AllArgsConstructor
+@NoArgsConstructor
+public class Recipient {
     private String name;
     private String phone;
     private String street;

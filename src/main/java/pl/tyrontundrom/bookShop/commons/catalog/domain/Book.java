@@ -1,4 +1,4 @@
-package pl.tyrontundrom.bookShop.catalog.domain;
+package pl.tyrontundrom.bookShop.commons.catalog.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

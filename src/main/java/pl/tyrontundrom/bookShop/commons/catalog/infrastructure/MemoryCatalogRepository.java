@@ -1,8 +1,8 @@
-package pl.tyrontundrom.bookShop.catalog.infrastructure;
+package pl.tyrontundrom.bookShop.commons.catalog.infrastructure;
 
 import org.springframework.stereotype.Repository;
-import pl.tyrontundrom.bookShop.catalog.domain.Book;
-import pl.tyrontundrom.bookShop.catalog.domain.CatalogRepository;
+import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.commons.catalog.domain.CatalogRepository;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,7 +2,6 @@ package pl.tyrontundrom.bookShop.uploads.web;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;

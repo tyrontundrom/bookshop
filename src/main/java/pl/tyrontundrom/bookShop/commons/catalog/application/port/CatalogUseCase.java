@@ -1,10 +1,10 @@
-package pl.tyrontundrom.bookShop.catalog.application.port;
+package pl.tyrontundrom.bookShop.commons.catalog.application.port;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.lang.StringUtils;
-import pl.tyrontundrom.bookShop.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
 
 import java.math.BigDecimal;
 import java.util.List;

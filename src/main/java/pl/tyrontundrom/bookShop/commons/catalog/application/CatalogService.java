@@ -1,10 +1,10 @@
-package pl.tyrontundrom.bookShop.catalog.application;
+package pl.tyrontundrom.bookShop.commons.catalog.application;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
-import pl.tyrontundrom.bookShop.catalog.domain.Book;
-import pl.tyrontundrom.bookShop.catalog.domain.CatalogRepository;
+import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase;
+import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.commons.catalog.domain.CatalogRepository;
 import pl.tyrontundrom.bookShop.uploads.application.ports.UploadUseCase;
 import pl.tyrontundrom.bookShop.uploads.application.ports.UploadUseCase.SaveUploadCommand;
 import pl.tyrontundrom.bookShop.uploads.domain.Upload;
