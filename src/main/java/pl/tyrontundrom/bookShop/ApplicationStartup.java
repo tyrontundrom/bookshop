@@ -1,13 +1,16 @@
 package pl.tyrontundrom.bookShop;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase;
-import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase.CreateBookCommand;
-import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase.UpdateBookCommand;
-import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase.UpdateBookResponse;
-import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.CreateBookCommand;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookCommand;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookResponse;
+import pl.tyrontundrom.bookShop.catalog.db.AuthorJpaRepository;
+import pl.tyrontundrom.bookShop.catalog.domain.Author;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase;
 import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase.PlaceOrderCommand;
 import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
@@ -17,41 +20,31 @@ import pl.tyrontundrom.bookShop.order.domain.Recipient;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase.*;
 
 @Component
+@AllArgsConstructor
 public class ApplicationStartup implements CommandLineRunner {
 
     private final CatalogUseCase catalog;
     private final ManipulateOrderUseCase placeOrder;
     private final QueryOrderUseCase queryOrder;
-    private final String title;
-    private final Long limit;
+    private final AuthorJpaRepository authorJpaRepository;
 
-    public ApplicationStartup(CatalogUseCase catalog,
-                              ManipulateOrderUseCase placeOrder,
-                              QueryOrderUseCase queryOrder,
-                              @Value("${bookShop.catalog.query}") String title,
-                              @Value("${bookShop.catalog.limit}") Long limit
-    ) {
-        this.catalog = catalog;
-        this.placeOrder = placeOrder;
-        this.queryOrder = queryOrder;
-        this.title = title;
-        this.limit = limit;
-    }
 
     @Override
     public void run(String... args) {
         initData();
-        searchCatalog();
         placeOrder();
     }
 
     private void placeOrder() {
-        Book panTadeusz = catalog.findOneByTitle("Pan Tadeusz").orElseThrow(() -> new IllegalStateException("Cannot find a book"));
-        Book chlopi = catalog.findOneByTitle("Chłopi").orElseThrow(() -> new IllegalStateException("Cannot find a book"));
+        Book panTadeusz = catalog.findOneByTitle("Pan Tadeusz")
+                .orElseThrow(() -> new IllegalStateException("Cannot find a book"));
+        Book chlopi = catalog.findOneByTitle("Java Puzzlers")
+                .orElseThrow(() -> new IllegalStateException("Cannot find a book"));
 
         Recipient recipient = Recipient
                 .builder()
@@ -81,40 +74,45 @@ public class ApplicationStartup implements CommandLineRunner {
                 .forEach(order -> System.out.println("GOT ORDER WITH TOTAL PRICE: " + order.totalPrice() + " DETAILS: " + order));
     }
 
-    private void searchCatalog() {
-        findByTitle();
-        findAndUpdate();
-        findByTitle();
-    }
 
     private void initData() {
-        catalog.addBook(new CreateBookCommand("Kolejne 365 dni", "Blanka Lipińska", 2019, new BigDecimal("19.90")));
-        catalog.addBook(new CreateBookCommand("Nasz ostatni dzień", "Adam Silvera", 2017, new BigDecimal("17.90")));
-        catalog.addBook(new CreateBookCommand("Obcy", "Albert Camus", 1957, new BigDecimal("29.90")));
-        catalog.addBook(new CreateBookCommand("Mały Książę", "Antoine de Saint-Exupéry", 1943, new BigDecimal("25.90")));
-        catalog.addBook(new CreateBookCommand("Pan Tadeusz", "Adam Mickiewicz", 1834, new BigDecimal("33.90")));
-        catalog.addBook(new CreateBookCommand("Ogniem i Mieczem", "Henryk Sienkiewicz", 1884, new BigDecimal("26.90")));
-        catalog.addBook(new CreateBookCommand("Chłopi", "Władysław Reymont", 1904, new BigDecimal("29.90")));
-        catalog.addBook(new CreateBookCommand("Pan Wołodyjowski", "Henryk Sienkiewicz", 1912, new BigDecimal("21.90")));
-    }
-
-    private void findAndUpdate() {
-        catalog.findOneByTitleAndAuthor("Pan Tadeusz", "Adam Mickiewicz")
-                .ifPresent(book -> {
-                    UpdateBookCommand command = UpdateBookCommand
-                            .builder()
-                            .id(book.getId())
-                            .title("Pan Tadeusz, czyli Ostatni Zajazd na Litwie")
-                            .build();
-                    UpdateBookResponse response = catalog.updateBook(command);
-                    System.out.println("Updating book result: " + response.isSuccess());
-                });
-    }
-
-
-    private void findByTitle() {
-        System.out.println("find by title:");
-        List<Book> books = catalog.findByTitle(title);
-        books.stream().limit(limit).forEach(System.out::println);
+        Author joshua = new Author("Joshua", "Bloch");
+        Author neal = new Author("Neal", "Gafter");
+        Author blanka = new Author("Blanka", "Lipińska");
+        Author adam = new Author("Adam", "Silvera");
+        Author albert = new Author("Albert", "Camus");
+        Author antoine = new Author("Antione", "de Saint-Exupery");
+        Author adamM = new Author("Adam", "Mickiewicz");
+        Author henryk = new Author("Henryk", "Sienkiewicz");
+        Author wladyslaw = new Author("Władysław", "Reymont");
+        authorJpaRepository.save(joshua);
+        authorJpaRepository.save(neal);
+        authorJpaRepository.save(blanka);
+        authorJpaRepository.save(adam);
+        authorJpaRepository.save(albert);
+        authorJpaRepository.save(antoine);
+        authorJpaRepository.save(adamM);
+        authorJpaRepository.save(henryk);
+        authorJpaRepository.save(wladyslaw);
+        CreateBookCommand effectiveJava = new CreateBookCommand("Effective Java", Set.of(joshua.getId()), 2005, new BigDecimal("79.00"));
+        CreateBookCommand javaPuzzlers = new CreateBookCommand("Java Puzzlers", Set.of(joshua.getId(), neal.getId()), 2018, new BigDecimal("99.00"));
+        CreateBookCommand kolejne365Dni = new CreateBookCommand("Kolejne 365 dni", Set.of(blanka.getId()), 2019, new BigDecimal("19.90"));
+        CreateBookCommand naszOstatniDzien = new CreateBookCommand("Nasz ostatni dzień", Set.of(adam.getId()), 2017, new BigDecimal("17.90"));
+        CreateBookCommand obcy = new CreateBookCommand("Obcy", Set.of(albert.getId()), 1957, new BigDecimal("29.90"));
+        CreateBookCommand malyKsiaze = new CreateBookCommand("Mały Książę", Set.of(antoine.getId()), 1943, new BigDecimal("25.90"));
+        CreateBookCommand panTadeusz = new CreateBookCommand("Pan Tadeusz", Set.of(adamM.getId()), 1834, new BigDecimal("33.90"));
+        CreateBookCommand ogniemIMieczem = new CreateBookCommand("Ogniem i Mieczem", Set.of(henryk.getId()), 1884, new BigDecimal("26.90"));
+        CreateBookCommand chlopi = new CreateBookCommand("Chłopi", Set.of(wladyslaw.getId()), 1904, new BigDecimal("29.90"));
+        CreateBookCommand panWolodyjowski = new CreateBookCommand("Pan Wołodyjowski", Set.of(henryk.getId()), 1912, new BigDecimal("21.90"));
+        catalog.addBook(effectiveJava);
+        catalog.addBook(javaPuzzlers);
+        catalog.addBook(kolejne365Dni);
+        catalog.addBook(naszOstatniDzien);
+        catalog.addBook(obcy);
+        catalog.addBook(malyKsiaze);
+        catalog.addBook(panTadeusz);
+        catalog.addBook(ogniemIMieczem);
+        catalog.addBook(chlopi);
+        catalog.addBook(panWolodyjowski);
     }
 }

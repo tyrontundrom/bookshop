@@ -2,12 +2,13 @@ package pl.tyrontundrom.bookShop.order.application;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
-import pl.tyrontundrom.bookShop.commons.catalog.domain.CatalogRepository;
+import pl.tyrontundrom.bookShop.catalog.db.BookJpaRepository;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
+import pl.tyrontundrom.bookShop.order.db.OrderJpaRepository;
 import pl.tyrontundrom.bookShop.order.domain.Order;
 import pl.tyrontundrom.bookShop.order.domain.OrderItem;
-import pl.tyrontundrom.bookShop.order.domain.OrderRepository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,8 +16,8 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 class QueryOrderService implements QueryOrderUseCase {
-    private final OrderRepository repository;
-    private final CatalogRepository catalogRepository;
+    private final OrderJpaRepository repository;
+    private final BookJpaRepository catalogRepository;
 
     @Override
     public List<RichOrder> findAll() {

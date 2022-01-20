@@ -3,14 +3,14 @@ package pl.tyrontundrom.bookShop.order.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase;
+import pl.tyrontundrom.bookShop.order.db.OrderJpaRepository;
 import pl.tyrontundrom.bookShop.order.domain.Order;
-import pl.tyrontundrom.bookShop.order.domain.OrderRepository;
 import pl.tyrontundrom.bookShop.order.domain.OrderStatus;
 
 @Service
 @RequiredArgsConstructor
 class ManipulateOrderService implements ManipulateOrderUseCase {
-    private final OrderRepository repository;
+    private final OrderJpaRepository repository;
 
     @Override
     public PlaceOrderResponse placeOrder(PlaceOrderCommand command) {

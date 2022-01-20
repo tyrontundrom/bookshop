@@ -1,7 +1,7 @@
 package pl.tyrontundrom.bookShop.order.application.port;
 
 import lombok.Value;
-import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.order.domain.OrderStatus;
 import pl.tyrontundrom.bookShop.order.domain.Recipient;
 import java.math.BigDecimal;

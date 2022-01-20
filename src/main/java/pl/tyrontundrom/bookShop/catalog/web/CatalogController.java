@@ -1,4 +1,4 @@
-package pl.tyrontundrom.bookShop.commons.catalog.web;
+package pl.tyrontundrom.bookShop.catalog.web;
 
 
 import lombok.AllArgsConstructor;
@@ -10,19 +10,24 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import pl.tyrontundrom.bookShop.commons.catalog.application.port.CatalogUseCase;
-import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.CreateBookCommand;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookCommand;
+import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookResponse;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.web.CreatedURI;
 
 import javax.validation.Valid;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RequestMapping("/catalog")
 @RestController
@@ -66,7 +71,7 @@ class CatalogController {
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateBook(@PathVariable Long id, @Validated(UpdateValidation.class) @RequestBody RestBookCommand command) {
-       CatalogUseCase.UpdateBookResponse response = catalog.updateBook(command.toUpdateCommand(id));
+       UpdateBookResponse response = catalog.updateBook(command.toUpdateCommand(id));
        if (!response.isSuccess()) {
            String message = String.join(",", response.getErrors());
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
@@ -108,15 +113,14 @@ class CatalogController {
     interface CreateValidation {
     }
 
-
     @Data
     private static class RestBookCommand {
 
         @NotBlank(message = "provide a title", groups = {CreateValidation.class})
         private String title;
 
-        @NotBlank(message = "provide an author", groups = {CreateValidation.class})
-        private String author;
+        @NotEmpty
+        private Set<Long> authors;
 
         @NotNull(message = "provide a year", groups = {CreateValidation.class})
         private Integer year;
@@ -125,12 +129,12 @@ class CatalogController {
         @DecimalMin(value = "0.00", message = "provide a price", groups = {CreateValidation.class, UpdateValidation.class})
         private BigDecimal price;
 
-        CatalogUseCase.CreateBookCommand toCreateCommand() {
-            return new CatalogUseCase.CreateBookCommand(title, author, year, price);
+        CreateBookCommand toCreateCommand() {
+            return new CreateBookCommand(title, authors, year, price);
         }
 
-        CatalogUseCase.UpdateBookCommand toUpdateCommand(Long id) {
-            return new CatalogUseCase.UpdateBookCommand(id, title, author, year, price);
+        UpdateBookCommand toUpdateCommand(Long id) {
+            return new UpdateBookCommand(id, title, authors, year, price);
         }
     }
 }

@@ -1,14 +1,14 @@
-package pl.tyrontundrom.bookShop.commons.catalog.application.port;
+package pl.tyrontundrom.bookShop.catalog.application.port;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import org.apache.commons.lang.StringUtils;
-import pl.tyrontundrom.bookShop.commons.catalog.domain.Book;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Collections.emptyList;
 
@@ -24,8 +24,6 @@ public interface CatalogUseCase {
     List<Book> findByAuthor(String author);
 
     List<Book> findByTitleAndAuthor(String title, String author);
-
-    Optional<Book> findOneByTitleAndAuthor(String title, String author);
 
     Book addBook(CreateBookCommand command);
 
@@ -48,13 +46,9 @@ public interface CatalogUseCase {
     @Value
     class CreateBookCommand {
         String title;
-        String author;
+        Set<Long> authors;
         Integer year;
         BigDecimal price;
-
-        public Book toBook() {
-            return new Book(title, author, year, price);
-        }
     }
 
     @Value
@@ -63,25 +57,9 @@ public interface CatalogUseCase {
     class UpdateBookCommand {
         Long id;
         String title;
-        String author;
+        Set<Long> authors;
         Integer year;
         BigDecimal price;
-
-        public Book updateFields(Book book) {
-            if (StringUtils.isNotBlank(title)) {
-                book.setTitle(title);
-            }
-            if (StringUtils.isNotBlank(author)) {
-                book.setAuthor(author);
-            }
-            if (year != null) {
-                book.setYear(year);
-            }
-            if (price != null) {
-                book.setPrice(price);
-            }
-            return book;
-        }
     }
 
     @Value
