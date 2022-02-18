@@ -1,32 +1,26 @@
-package pl.tyrontundrom.bookShop;
+package pl.tyrontundrom.bookShop.catalog.web;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
-import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.CreateBookCommand;
-import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookCommand;
-import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookResponse;
 import pl.tyrontundrom.bookShop.catalog.db.AuthorJpaRepository;
 import pl.tyrontundrom.bookShop.catalog.domain.Author;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase;
-import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase.PlaceOrderCommand;
 import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
 import pl.tyrontundrom.bookShop.order.domain.OrderItem;
 import pl.tyrontundrom.bookShop.order.domain.Recipient;
 
-
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 
-import static pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase.*;
-
-@Component
+@RestController
+@RequestMapping("/admin")
 @AllArgsConstructor
-public class ApplicationStartup implements CommandLineRunner {
+class AdminController {
 
     private final CatalogUseCase catalog;
     private final ManipulateOrderUseCase placeOrder;
@@ -34,8 +28,9 @@ public class ApplicationStartup implements CommandLineRunner {
     private final AuthorJpaRepository authorJpaRepository;
 
 
-    @Override
-    public void run(String... args) {
+    @PostMapping("/data")
+    @Transactional
+    public void initialize() {
         initData();
         placeOrder();
     }
@@ -56,14 +51,14 @@ public class ApplicationStartup implements CommandLineRunner {
                 .email("jan.kowalski@wp.pl")
                 .build();
 
-        PlaceOrderCommand command = PlaceOrderCommand
+        ManipulateOrderUseCase.PlaceOrderCommand command = ManipulateOrderUseCase.PlaceOrderCommand
                 .builder()
                 .recipient(recipient)
                 .item(new OrderItem(panTadeusz.getId(), 16))
                 .item(new OrderItem(chlopi.getId(), 7))
                 .build();
 
-        PlaceOrderResponse response = placeOrder.placeOrder(command);
+        ManipulateOrderUseCase.PlaceOrderResponse response = placeOrder.placeOrder(command);
         String result = response.handle(
                 orderId -> "Created ORDER with id: " + orderId,
                 error -> "Failed to created order: " + error
@@ -94,16 +89,16 @@ public class ApplicationStartup implements CommandLineRunner {
         authorJpaRepository.save(adamM);
         authorJpaRepository.save(henryk);
         authorJpaRepository.save(wladyslaw);
-        CreateBookCommand effectiveJava = new CreateBookCommand("Effective Java", Set.of(joshua.getId()), 2005, new BigDecimal("79.00"));
-        CreateBookCommand javaPuzzlers = new CreateBookCommand("Java Puzzlers", Set.of(joshua.getId(), neal.getId()), 2018, new BigDecimal("99.00"));
-        CreateBookCommand kolejne365Dni = new CreateBookCommand("Kolejne 365 dni", Set.of(blanka.getId()), 2019, new BigDecimal("19.90"));
-        CreateBookCommand naszOstatniDzien = new CreateBookCommand("Nasz ostatni dzień", Set.of(adam.getId()), 2017, new BigDecimal("17.90"));
-        CreateBookCommand obcy = new CreateBookCommand("Obcy", Set.of(albert.getId()), 1957, new BigDecimal("29.90"));
-        CreateBookCommand malyKsiaze = new CreateBookCommand("Mały Książę", Set.of(antoine.getId()), 1943, new BigDecimal("25.90"));
-        CreateBookCommand panTadeusz = new CreateBookCommand("Pan Tadeusz", Set.of(adamM.getId()), 1834, new BigDecimal("33.90"));
-        CreateBookCommand ogniemIMieczem = new CreateBookCommand("Ogniem i Mieczem", Set.of(henryk.getId()), 1884, new BigDecimal("26.90"));
-        CreateBookCommand chlopi = new CreateBookCommand("Chłopi", Set.of(wladyslaw.getId()), 1904, new BigDecimal("29.90"));
-        CreateBookCommand panWolodyjowski = new CreateBookCommand("Pan Wołodyjowski", Set.of(henryk.getId()), 1912, new BigDecimal("21.90"));
+        CatalogUseCase.CreateBookCommand effectiveJava = new CatalogUseCase.CreateBookCommand("Effective Java", Set.of(joshua.getId()), 2005, new BigDecimal("79.00"));
+        CatalogUseCase.CreateBookCommand javaPuzzlers = new CatalogUseCase.CreateBookCommand("Java Puzzlers", Set.of(joshua.getId(), neal.getId()), 2018, new BigDecimal("99.00"));
+        CatalogUseCase.CreateBookCommand kolejne365Dni = new CatalogUseCase.CreateBookCommand("Kolejne 365 dni", Set.of(blanka.getId()), 2019, new BigDecimal("19.90"));
+        CatalogUseCase.CreateBookCommand naszOstatniDzien = new CatalogUseCase.CreateBookCommand("Nasz ostatni dzień", Set.of(adam.getId()), 2017, new BigDecimal("17.90"));
+        CatalogUseCase.CreateBookCommand obcy = new CatalogUseCase.CreateBookCommand("Obcy", Set.of(albert.getId()), 1957, new BigDecimal("29.90"));
+        CatalogUseCase.CreateBookCommand malyKsiaze = new CatalogUseCase.CreateBookCommand("Mały Książę", Set.of(antoine.getId()), 1943, new BigDecimal("25.90"));
+        CatalogUseCase.CreateBookCommand panTadeusz = new CatalogUseCase.CreateBookCommand("Pan Tadeusz", Set.of(adamM.getId()), 1834, new BigDecimal("33.90"));
+        CatalogUseCase.CreateBookCommand ogniemIMieczem = new CatalogUseCase.CreateBookCommand("Ogniem i Mieczem", Set.of(henryk.getId()), 1884, new BigDecimal("26.90"));
+        CatalogUseCase.CreateBookCommand chlopi = new CatalogUseCase.CreateBookCommand("Chłopi", Set.of(wladyslaw.getId()), 1904, new BigDecimal("29.90"));
+        CatalogUseCase.CreateBookCommand panWolodyjowski = new CatalogUseCase.CreateBookCommand("Pan Wołodyjowski", Set.of(henryk.getId()), 1912, new BigDecimal("21.90"));
         catalog.addBook(effectiveJava);
         catalog.addBook(javaPuzzlers);
         catalog.addBook(kolejne365Dni);

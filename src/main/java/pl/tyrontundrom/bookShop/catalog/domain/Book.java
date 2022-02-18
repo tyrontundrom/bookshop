@@ -5,11 +5,14 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import pl.tyrontundrom.bookShop.jpa.BaseEntity;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,19 +20,17 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Book {
-    @Id
-    @GeneratedValue
-    private Long id;
+public class Book extends BaseEntity {
+
     private String title;
     private Integer year;
     private BigDecimal price;
     private Long coverId;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable
     @JsonIgnoreProperties("books")
-    private Set<Author> authors;
+    private Set<Author> authors = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -41,5 +42,21 @@ public class Book {
         this.title = title;
         this.year = year;
         this.price = price;
+    }
+
+    public void addAuthor(Author author) {
+        authors.add(author);
+        author.getBooks().add(this);
+    }
+
+    public void removeAuthor(Author author) {
+        authors.remove(author);
+        author.getBooks().remove(this);
+    }
+
+    public void removeAuthors() {
+        Book self = this;
+        authors.forEach(author -> author.getBooks().remove(self));
+        authors.clear();
     }
 }

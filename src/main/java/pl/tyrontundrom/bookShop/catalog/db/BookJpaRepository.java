@@ -10,6 +10,9 @@ import java.util.Optional;
 
 public interface BookJpaRepository extends JpaRepository<Book, Long> {
 
+    @Query(" SELECT b FROM Book b JOIN FETCH b.authors ")
+    List<Book> findAllEager();
+
     List<Book> findByAuthors_firstNameContainsIgnoreCaseOrAuthors_lastNameContainsIgnoreCase(String firstName, String lastName);
 
     List<Book> findByTitleStartsWithIgnoreCase(String title);
@@ -24,5 +27,12 @@ public interface BookJpaRepository extends JpaRepository<Book, Long> {
     )
     List<Book> findByAuthor(@Param("name") String name);
 
-
+    @Query(
+            " SELECT b FROM Book b JOIN b.authors a " +
+                    " WHERE " +
+                    " lower(b.title) LIKE lower(concat('%', :book_title,'%')) " +
+                    " AND lower(a.firstName) LIKE lower(concat('%', :name,'%')) " +
+                    " OR lower(a.lastName) LIKE lower(concat('%', :name,'%'))"
+    )
+    List<Book> findByTitleAndAuthor(@Param("book_title") String title, @Param("name") String author);
 }

@@ -1,25 +1,20 @@
 package pl.tyrontundrom.bookShop.order.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Value;
+import lombok.*;
+import pl.tyrontundrom.bookShop.jpa.BaseEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Data
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
-public class OrderItem {
-    @Id
-    @GeneratedValue
-    private Long id;
+@AllArgsConstructor
+public class OrderItem extends BaseEntity {
+
     private Long bookId;
     private int quantity;
 
-    public OrderItem(Long bookId, int quantity) {
-        this.bookId = bookId;
-        this.quantity = quantity;
-    }
 }

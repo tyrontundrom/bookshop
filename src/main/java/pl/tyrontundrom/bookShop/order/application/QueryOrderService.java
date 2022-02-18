@@ -2,6 +2,7 @@ package pl.tyrontundrom.bookShop.order.application;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.tyrontundrom.bookShop.catalog.db.BookJpaRepository;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
@@ -20,6 +21,7 @@ class QueryOrderService implements QueryOrderUseCase {
     private final BookJpaRepository catalogRepository;
 
     @Override
+    @Transactional
     public List<RichOrder> findAll() {
         return repository.findAll()
                 .stream()

@@ -2,6 +2,7 @@ package pl.tyrontundrom.bookShop.catalog.application;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
 import pl.tyrontundrom.bookShop.catalog.db.AuthorJpaRepository;
 import pl.tyrontundrom.bookShop.catalog.db.BookJpaRepository;
@@ -48,19 +49,16 @@ class CatalogService implements CatalogUseCase {
 
     @Override
     public List<Book> findByTitleAndAuthor(String title, String author) {
-        return repository.findAll()
-                .stream()
-                .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
-//                .filter(book -> book.getAuthor().toLowerCase().contains(author.toLowerCase()))
-                .collect(Collectors.toList());
+        return repository.findByTitleAndAuthor(title, author);
     }
 
     @Override
     public List<Book> findAll() {
-        return repository.findAll();
+        return repository.findAllEager();
     }
 
     @Override
+    @Transactional
     public Book addBook(CreateBookCommand command) {
         Book book = toBook(command);
         return repository.save(book);
@@ -69,8 +67,13 @@ class CatalogService implements CatalogUseCase {
     private Book toBook(CreateBookCommand command) {
         Book book = new Book(command.getTitle(), command.getYear(), command.getPrice());
         Set<Author> authors = fetchAuthorsByIds(command.getAuthors());
-        book.setAuthors(authors);
+        updateBooks(book, authors);
         return book;
+    }
+
+    private void updateBooks(Book book, Set<Author> authors) {
+        book.removeAuthors();
+        authors.forEach(book::addAuthor);
     }
 
     private Set<Author> fetchAuthorsByIds(Set<Long> authors) {
@@ -83,12 +86,12 @@ class CatalogService implements CatalogUseCase {
     }
 
     @Override
+    @Transactional
     public UpdateBookResponse updateBook(UpdateBookCommand command) {
         return repository
                 .findById(command.getId())
                 .map(book -> {
-                    Book updatedBook = updateFields(command, book);
-                    repository.save(updatedBook);
+                    updateFields(command, book);
                     return UpdateBookResponse.SUCCESS;
                 })
                 .orElseGet(() -> new UpdateBookResponse(false, Collections.singletonList("Book not found with id: " + command.getId())));
@@ -99,7 +102,7 @@ class CatalogService implements CatalogUseCase {
             book.setTitle(command.getTitle());
         }
         if (command.getAuthors() != null && command.getAuthors().size() > 0) {
-            book.setAuthors(fetchAuthorsByIds(command.getAuthors()));
+            updateBooks(book, fetchAuthorsByIds(command.getAuthors()));
         }
         if (command.getYear() != null) {
             book.setYear(command.getYear());
