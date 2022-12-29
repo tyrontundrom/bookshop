@@ -7,8 +7,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import pl.tyrontundrom.bookShop.jpa.BaseEntity;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -26,10 +27,14 @@ public class Order extends BaseEntity {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
-    private List<OrderItem> items;
+    private Set<OrderItem> items;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Recipient recipient;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private Delivery delivery = Delivery.COURIER;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -37,4 +42,19 @@ public class Order extends BaseEntity {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    public UpdateStatusResult updateStatus(OrderStatus newStatus) {
+        UpdateStatusResult result = this.orderStatus.updateStatus(newStatus);
+        this.orderStatus = result.getNewStatus();
+        return result;
+    }
+
+    public BigDecimal getItemsPrice() {
+        return items.stream()
+                .map(item -> item.getBook().getPrice().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getDeliveryPrice() {
+        return delivery.getPrice();
+    }
 }

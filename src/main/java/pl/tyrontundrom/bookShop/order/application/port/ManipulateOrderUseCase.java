@@ -1,10 +1,8 @@
 package pl.tyrontundrom.bookShop.order.application.port;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
+import lombok.*;
 import pl.tyrontundrom.bookShop.commons.Either;
+import pl.tyrontundrom.bookShop.order.domain.Delivery;
 import pl.tyrontundrom.bookShop.order.domain.OrderItem;
 import pl.tyrontundrom.bookShop.order.domain.OrderStatus;
 import pl.tyrontundrom.bookShop.order.domain.Recipient;
@@ -16,15 +14,29 @@ public interface ManipulateOrderUseCase {
 
     void deleteOrderById(Long id);
 
-    void updateOrderStatus(Long id, OrderStatus status);
+    UpdateStatusResponse updateOrderStatus(UpdateStatusCommand command);
 
     @Builder
     @Value
     @AllArgsConstructor
     class PlaceOrderCommand {
         @Singular
-        List<OrderItem> items;
+        List<OrderItemCommand> items;
         Recipient recipient;
+        Delivery delivery;
+    }
+
+    @Value
+    class OrderItemCommand {
+        Long bookId;
+        int quantity;
+    }
+
+    @Value
+    class UpdateStatusCommand {
+        Long orderId;
+        OrderStatus status;
+        String email;
     }
 
 
@@ -40,6 +52,21 @@ public interface ManipulateOrderUseCase {
 
         public static PlaceOrderResponse failure(String error) {
             return new PlaceOrderResponse(false, error, null);
+        }
+    }
+
+    class UpdateStatusResponse extends Either<String, OrderStatus> {
+
+        public UpdateStatusResponse(boolean success, String left, OrderStatus right) {
+            super(success, left, right);
+        }
+
+        public static UpdateStatusResponse success(OrderStatus status) {
+            return new UpdateStatusResponse(true, null, status);
+        }
+
+        public static UpdateStatusResponse failure(String error) {
+            return new UpdateStatusResponse(false, error, null);
         }
     }
 }

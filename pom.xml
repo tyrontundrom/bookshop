@@ -14,15 +14,21 @@
 	<name>Shop Online</name>
 	<description>Demo project for Spring Boot at bookShop</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<lombok.version>1.18.22</lombok.version>
 		<hibernate-validator.version>6.2.0.Final</hibernate-validator.version>
 		<commons.lang.version>2.6</commons.lang.version>
 		<commons.lang3.version>3.12.0</commons.lang3.version>
 		<springdoc-openapi-ui.version>1.6.3</springdoc-openapi-ui.version>
 		<postgresql.version>42.3.1</postgresql.version>
+		<opencsv.version>5.3</opencsv.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>${opencsv.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -63,9 +69,20 @@
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

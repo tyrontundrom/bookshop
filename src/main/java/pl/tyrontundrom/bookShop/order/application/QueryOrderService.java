@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.tyrontundrom.bookShop.catalog.db.BookJpaRepository;
-import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
+import pl.tyrontundrom.bookShop.order.application.price.OrderPrice;
+import pl.tyrontundrom.bookShop.order.application.price.PriceService;
 import pl.tyrontundrom.bookShop.order.db.OrderJpaRepository;
 import pl.tyrontundrom.bookShop.order.domain.Order;
-import pl.tyrontundrom.bookShop.order.domain.OrderItem;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 class QueryOrderService implements QueryOrderUseCase {
     private final OrderJpaRepository repository;
-    private final BookJpaRepository catalogRepository;
+    private final PriceService priceService;
 
     @Override
     @Transactional
@@ -29,30 +29,22 @@ class QueryOrderService implements QueryOrderUseCase {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Optional<RichOrder> findById(Long id) {
         return repository.findById(id).map(this::toRichOrder);
     }
 
     private RichOrder toRichOrder(Order order) {
-        List<RichOrderItem> richItems = toRichItems(order.getItems());
+        OrderPrice orderPrice = priceService.calculatePrice(order);
         return new RichOrder(
                 order.getId(),
                 order.getOrderStatus(),
-                richItems,
+                order.getItems(),
                 order.getRecipient(),
-                order.getCreatedAt()
+                order.getCreatedAt(),
+                orderPrice,
+                orderPrice.finalPrice()
         );
-    }
-
-    private List<RichOrderItem> toRichItems(List<OrderItem> items) {
-        return items.stream()
-                .map(item -> {
-                    Book book = catalogRepository
-                            .findById(item.getBookId())
-                            .orElseThrow(() -> new IllegalStateException("Unable to find book with ID: " + item.getBookId()));
-                    return new RichOrderItem(book, item.getQuantity());
-                })
-                .collect(Collectors.toList());
     }
 
 }

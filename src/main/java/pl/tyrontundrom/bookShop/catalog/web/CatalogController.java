@@ -3,6 +3,7 @@ package pl.tyrontundrom.bookShop.catalog.web;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,7 @@ import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.web.CreatedURI;
 
 import javax.validation.Valid;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -29,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @RequestMapping("/catalog")
 @RestController
 @AllArgsConstructor
@@ -81,7 +80,7 @@ class CatalogController {
     @PutMapping(value = "{id}/cover", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void addBookCover(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
-        System.out.println("Got file: " + file.getOriginalFilename());
+        log.info("Got file: " + file.getOriginalFilename());
         catalog.updateBookCover(new CatalogUseCase.UpdateBookCoverCommand(
                 id,
                 file.getBytes(),
@@ -125,12 +124,16 @@ class CatalogController {
         @NotNull(message = "provide a year", groups = {CreateValidation.class})
         private Integer year;
 
+        @NotNull
+        @PositiveOrZero
+        private Long available;
+
         @NotNull(message = "provide a price", groups = {CreateValidation.class})
         @DecimalMin(value = "0.00", message = "provide a price", groups = {CreateValidation.class, UpdateValidation.class})
         private BigDecimal price;
 
         CreateBookCommand toCreateCommand() {
-            return new CreateBookCommand(title, authors, year, price);
+            return new CreateBookCommand(title, authors, year, price, available);
         }
 
         UpdateBookCommand toUpdateCommand(Long id) {

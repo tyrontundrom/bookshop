@@ -1,11 +1,10 @@
 package pl.tyrontundrom.bookShop.order.domain;
 
 import lombok.*;
+import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.jpa.BaseEntity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Getter
 @Setter
@@ -14,7 +13,9 @@ import javax.persistence.Id;
 @AllArgsConstructor
 public class OrderItem extends BaseEntity {
 
-    private Long bookId;
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    private Book book;
     private int quantity;
 
 }

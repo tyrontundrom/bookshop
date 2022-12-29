@@ -8,15 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase;
 import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
-import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase.RichOrder;
-import pl.tyrontundrom.bookShop.order.domain.OrderItem;
+import pl.tyrontundrom.bookShop.order.application.RichOrder;
 import pl.tyrontundrom.bookShop.order.domain.OrderStatus;
-import pl.tyrontundrom.bookShop.order.domain.Recipient;
 import pl.tyrontundrom.bookShop.web.CreatedURI;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase.*;
 
@@ -44,9 +42,9 @@ class OrdersController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Object> createOrder(@RequestBody CreateOrderCommand command) {
+    public ResponseEntity<Object> createOrder(@RequestBody PlaceOrderCommand command) {
         return manipulateOrder
-                .placeOrder(command.toPlaceCommand())
+                .placeOrder(command)
                 .handle(
                         orderId -> ResponseEntity.created(orderURI(orderId)).build(),
                         error -> ResponseEntity.badRequest().body(error)
@@ -59,11 +57,13 @@ class OrdersController {
 
     @PutMapping("/{id}/status")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void updateOrderStatus(@PathVariable Long id, @RequestBody UpdateStatusCommand command) {
+    public void updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
         OrderStatus orderStatus = OrderStatus
-                .parseString(command.status)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown status: " + command.status));
-        manipulateOrder.updateOrderStatus(id, orderStatus);
+                .parseString(status)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown status: " + status));
+        UpdateStatusCommand command = new UpdateStatusCommand(id, orderStatus, "admin@example.com");
+        manipulateOrder.updateOrderStatus(command);
     }
 
     @DeleteMapping("{id}")
@@ -73,43 +73,5 @@ class OrdersController {
     }
 
 
-    @Data
-    private static class UpdateStatusCommand {
-        String status;
-    }
 
-    @Data
-    static class CreateOrderCommand {
-        List<OrderItemCommand> items;
-        RecipientCommand recipient;
-
-        PlaceOrderCommand toPlaceCommand() {
-            List<OrderItem> orderItems = items
-                    .stream()
-                    .map(item -> new OrderItem(item.bookId, item.quantity))
-                    .collect(Collectors.toList());
-            return new PlaceOrderCommand(orderItems, recipient.toRecipient());
-        }
-    }
-
-    @Data
-    static class OrderItemCommand {
-        Long bookId;
-        int quantity;
-    }
-
-    @Data
-    static class RecipientCommand {
-        String name;
-        String phone;
-        String street;
-        String city;
-        String zipcode;
-        String email;
-
-        Recipient toRecipient() {
-            return new Recipient(name, phone, street, city, zipcode, email);
-        }
-
-    }
 }

@@ -1,6 +1,7 @@
 package pl.tyrontundrom.bookShop.catalog.application;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 class CatalogService implements CatalogUseCase {
@@ -65,7 +67,7 @@ class CatalogService implements CatalogUseCase {
     }
 
     private Book toBook(CreateBookCommand command) {
-        Book book = new Book(command.getTitle(), command.getYear(), command.getPrice());
+        Book book = new Book(command.getTitle(), command.getYear(), command.getPrice(), command.getAvailable());
         Set<Author> authors = fetchAuthorsByIds(command.getAuthors());
         updateBooks(book, authors);
         return book;
@@ -121,7 +123,7 @@ class CatalogService implements CatalogUseCase {
     @Override
     public void updateBookCover(UpdateBookCoverCommand command) {
         int length = command.getFile().length;
-        System.out.println("Received cover command: " + command.getFilename() + " bytes: " + length);
+        log.info("Received cover command: " + command.getFilename() + " bytes: " + length);
         repository.findById(command.getId())
                 .ifPresent(book -> {
                     Upload saveUpload = upload.save(new SaveUploadCommand(command.getFilename(), command.getFile(), command.getContentType()));
