@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,6 +61,7 @@ class CatalogController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Secured({"ROLE_ADMIN"})
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> addBook(@Valid @RequestBody RestBookCommand command) {
@@ -67,6 +69,7 @@ class CatalogController {
         return ResponseEntity.created(createdBookUri(book)).build();
     }
 
+    @Secured({"ROLE_ADMIN"})
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateBook(@PathVariable Long id, @Validated(UpdateValidation.class) @RequestBody RestBookCommand command) {
@@ -77,6 +80,7 @@ class CatalogController {
        }
     }
 
+    @Secured({"ROLE_ADMIN"})
     @PutMapping(value = "{id}/cover", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void addBookCover(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
@@ -89,6 +93,7 @@ class CatalogController {
         ));
     }
 
+    @Secured({"ROLE_ADMIN"})
     @DeleteMapping("/{id}/cover")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBookCover(@PathVariable Long id) {
@@ -96,6 +101,7 @@ class CatalogController {
     }
 
 
+    @Secured({"ROLE_ADMIN"})
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable Long id) {

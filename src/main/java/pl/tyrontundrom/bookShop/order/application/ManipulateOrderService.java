@@ -9,6 +9,7 @@ import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase;
 import pl.tyrontundrom.bookShop.order.db.OrderJpaRepository;
 import pl.tyrontundrom.bookShop.order.db.RecipientJpaRepository;
 import pl.tyrontundrom.bookShop.order.domain.*;
+import pl.tyrontundrom.bookShop.security.UserSecurity;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
     private final OrderJpaRepository repository;
     private final BookJpaRepository bookJpaRepository;
     private final RecipientJpaRepository recipientJpaRepository;
+    private final UserSecurity userSecurity;
 
     @Override
     public PlaceOrderResponse placeOrder(PlaceOrderCommand command) {
@@ -73,27 +75,22 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
     }
 
     @Override
+    @Transactional
     public UpdateStatusResponse updateOrderStatus(UpdateStatusCommand command) {
         return repository
                 .findById(command.getOrderId())
                 .map(order -> {
-                    if (!hasAcces(command, order)) {
-                        return UpdateStatusResponse.failure("Unauthorized");
+                    if (userSecurity.isOwnerOrAdmin(order.getRecipient().getEmail(), command.getUser())) {
+                        UpdateStatusResult result = order.updateStatus(command.getStatus());
+                        if (result.isRevoked()) {
+                            bookJpaRepository.saveAll(revokeBooks(order.getItems()));
+                        }
+                        repository.save(order);
+                        return UpdateStatusResponse.success(order.getOrderStatus());
                     }
-                    UpdateStatusResult result = order.updateStatus(command.getStatus());
-                    if (result.isRevoked()) {
-                        bookJpaRepository.saveAll(revokeBooks(order.getItems()));
-                    }
-                    repository.save(order);
-                    return UpdateStatusResponse.success(order.getOrderStatus());
+                    return UpdateStatusResponse.failure(Error.FORBIDDEN);
                 })
-                .orElse(UpdateStatusResponse.failure("Order not found"));
-    }
-
-    private static boolean hasAcces(UpdateStatusCommand command, Order order) {
-        String email = command.getEmail();
-        return email.equalsIgnoreCase(order.getRecipient().getEmail()) ||
-                email.equalsIgnoreCase("admin@example.com");
+                .orElse(UpdateStatusResponse.failure(Error.NOT_FOUND));
     }
 
     private Set<Book> revokeBooks(Set<OrderItem> items) {

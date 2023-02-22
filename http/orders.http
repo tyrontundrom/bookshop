@@ -15,11 +15,11 @@ Content-Type: application/json
 {
   "items": [
     {
-      "bookId": 11,
+      "bookId": 66,
       "quantity": 1
     },
     {
-      "bookId": 10,
+      "bookId": 96,
       "quantity": 2
     }
   ],
