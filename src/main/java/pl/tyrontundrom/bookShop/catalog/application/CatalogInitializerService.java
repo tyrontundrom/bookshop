@@ -21,20 +21,16 @@ import pl.tyrontundrom.bookShop.catalog.db.AuthorJpaRepository;
 import pl.tyrontundrom.bookShop.catalog.domain.Author;
 import pl.tyrontundrom.bookShop.catalog.domain.Book;
 import pl.tyrontundrom.bookShop.jpa.BaseEntity;
-import pl.tyrontundrom.bookShop.order.application.port.ManipulateOrderUseCase;
-import pl.tyrontundrom.bookShop.order.application.port.QueryOrderUseCase;
-import pl.tyrontundrom.bookShop.order.domain.Recipient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.*;
+import static pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.UpdateBookCoverCommand;
 
 @Slf4j
 @Service
@@ -42,8 +38,6 @@ import static pl.tyrontundrom.bookShop.catalog.application.port.CatalogUseCase.*
 class CatalogInitializerService implements CatalogInitializerUseCase {
 
     private final CatalogUseCase catalog;
-    private final ManipulateOrderUseCase placeOrder;
-    private final QueryOrderUseCase queryOrder;
     private final AuthorJpaRepository authorJpaRepository;
     private final RestTemplate restTemplate;
 
@@ -53,42 +47,6 @@ class CatalogInitializerService implements CatalogInitializerUseCase {
         initData();
 //        placeOrder();
     }
-    private void placeOrder() {
-        Book effectiveJava = catalog.findOneByTitle("Effective Java")
-                .orElseThrow(() -> new IllegalStateException("Cannot find a book"));
-        Book puzzlers = catalog.findOneByTitle("Java Puzzlers")
-                .orElseThrow(() -> new IllegalStateException("Cannot find a book"));
-
-        // create recipient
-        Recipient recipient = Recipient
-                .builder()
-                .name("Jan Kowalski")
-                .phone("123-456-789")
-                .street("Armii Krajowej 31")
-                .city("Krakow")
-                .zipCode("30-150")
-                .email("jan@example.org")
-                .build();
-
-        ManipulateOrderUseCase.PlaceOrderCommand command = ManipulateOrderUseCase.PlaceOrderCommand
-                .builder()
-                .recipient(recipient)
-                .item(new ManipulateOrderUseCase.OrderItemCommand(effectiveJava.getId(), 16))
-                .item(new ManipulateOrderUseCase.OrderItemCommand(puzzlers.getId(), 7))
-                .build();
-
-        ManipulateOrderUseCase.PlaceOrderResponse response = placeOrder.placeOrder(command);
-        String result = response.handle(
-                orderId -> "Created ORDER with id: " + orderId,
-                error -> "Failed to created order: " + error
-        );
-        log.info(result);
-
-        // list all orders
-        queryOrder.findAll()
-                .forEach(order -> log.info("GOT ORDER WITH TOTAL PRICE: " + order.getFinalPrice() + " DETAILS: " + order));
-    }
-
 
     private void initData() {
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource("books.csv").getInputStream()))) {
