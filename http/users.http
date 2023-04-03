@@ -19,3 +19,6 @@ Content-Type: application/json
 
 ###
 GET localhost:8080/orders/115
+
+###
+GET http://localhost:8080/catalog

@@ -3,6 +3,7 @@ package pl.tyrontundrom.bookShop.order.application.port;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import pl.tyrontundrom.bookShop.commons.Either;
 import pl.tyrontundrom.bookShop.order.domain.Delivery;
 import pl.tyrontundrom.bookShop.order.domain.OrderItem;
@@ -39,7 +40,7 @@ public interface ManipulateOrderUseCase {
     class UpdateStatusCommand {
         Long orderId;
         OrderStatus status;
-        User user;
+        UserDetails user;
     }
 
 
